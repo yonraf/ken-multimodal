@@ -1,4 +1,6 @@
 import requests
+import os
+
 
 def send_audio_to_server(audio_file_path):
     url = 'http://localhost:5000/transcribe'
@@ -10,6 +12,6 @@ def send_audio_to_server(audio_file_path):
     return response.text
 
 if __name__ == '__main__':
-    audio_file_path = './6.wav'  # Replace with your audio file path
+    audio_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "6.wav")    
     result = send_audio_to_server(audio_file_path)
     print('Command detected:', result)
