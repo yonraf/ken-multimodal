@@ -10,7 +10,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 
-model = whisper.load_model('medium')  # Initialize Whisper or any other speech recognition library
+model = whisper.load_model('base')  # Initialize Whisper or any other speech recognition library
 
 @app.route("/ask", methods=["POST"])
 def generate_response():
