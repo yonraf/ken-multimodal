@@ -7,8 +7,9 @@ from flask_cors import CORS
 import torch
 
 
-torch.cuda.init()
+
 device = "cuda"  if torch.cuda.is_available() else "cpu"
+print(device)
 
 #4/3-24 : Virker. Eksempel på curl til 5000 
 # curl -X POST http://localhost:5000/ask -H "Content-Type: application/json" -d "{\"prompt\": \"Wash a8?\"}"
