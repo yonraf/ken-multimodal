@@ -1,5 +1,9 @@
 import requests
 import os
+import time
+
+
+
 
 
 def send_audio_to_server(audio_file_path):
@@ -12,6 +16,8 @@ def send_audio_to_server(audio_file_path):
     return response.text
 
 if __name__ == '__main__':
-    audio_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "6.wav")    
+    start_time = time.time()
+    audio_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "2.wav")    
     result = send_audio_to_server(audio_file_path)
     print('Command detected:', result)
+    print("--- %s seconds ---" % (time.time() - start_time))

@@ -4,13 +4,18 @@ import json
 import numpy as np
 import whisper
 from flask_cors import CORS
+import torch
+
+
+torch.cuda.init()
+device = "cuda"  if torch.cuda.is_available() else "cpu"
 
 #4/3-24 : Virker. Eksempel på curl til 5000 
 # curl -X POST http://localhost:5000/ask -H "Content-Type: application/json" -d "{\"prompt\": \"Wash a8?\"}"
 
 app = Flask(__name__)
 
-model = whisper.load_model('base')  # Initialize Whisper or any other speech recognition library
+model = whisper.load_model('small').to(device)  # Initialize Whisper or any other speech recognition library
 
 @app.route("/ask", methods=["POST"])
 def generate_response():
