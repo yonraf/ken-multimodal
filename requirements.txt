@@ -1,9 +1,0 @@
-Flask
-requests
-numpy
-whisper
-flask-cors
-torch
-torchvision
-torchaudio
-openai-whisper
