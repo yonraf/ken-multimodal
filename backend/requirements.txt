@@ -1,0 +1,4 @@
+Flask
+requests
+faster-whisper
+flask-cors

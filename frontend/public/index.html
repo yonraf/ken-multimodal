@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a5276;
+            /* Dark Blue */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            text-align: center;
+        }
+
+        #label-container {
+            font-size: 24px;
+            color: #ffffff;
+            background-color: #2980b9;
+            /* Blue */
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            background-color: #2980b9;
+            /* Blue */
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1a5276;
+            /* Dark Blue */
+        }
+    </style>
+    <script src="http://localhost:3000/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div>Ken speech interface</div>
+        <br>
+        <button type="button" onclick="init()">Start</button>
+        <br><br>
+        <div id="label-container"></div>
+        <audio id="recordedAudio" controls></audio> <!-- Audio element for playback -->
+    </div>
+</body>
+</html>
