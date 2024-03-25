@@ -77,7 +77,7 @@ async function init() {
                                 isRecording = false;
                                 document.body.style.backgroundColor = "#1a5276";
                                 document.body.classList.remove('recording'); // Remove 'recording' class from body
-                            }, 3000); // Record for 3 seconds
+                            }, 5000); // Record for 3 seconds
                         }
                     }
                 }, {

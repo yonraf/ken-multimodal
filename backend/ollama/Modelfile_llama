@@ -84,6 +84,10 @@ I said: 'I just emptied rack A6, send it back.'. You said: '(Send, A6)'. You sho
 Explanation: There is no command called send. You know that racks are emptied on the clean side, and once that is done, their are sent to the dirty side through the return hatch. Return is therefore the desired sentence.
 
 Mistake 15:
-I said: 'I just empty the rack A2, send it back.'. You said: '(Wash, A2)'. You should've said '(Return, A2)'
+I said: 'I just empty the rack A2, send it back.'. You said: '(Wash, A2)'. You should've said: '(Return, A2)'
 Explanation: You know that racks are emptied on the clean side, and once that is done, their are sent to the dirty side through the return hatch. Return is therefore the desired sentence
+
+Mistake 16:
+I said: 'REC A2 is empty, send it to the dirty site'. You said: '(Wash, A2)'. You should've said: '(Return, A2)'
+Explanation: They only way a rack can enter the dirty room, is through the return hatch. It should therefore be return and not Wash
 """
