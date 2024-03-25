@@ -76,5 +76,14 @@ I said: 'move D2 to location 5'. You said '(Move, D2, 5'. You should've said: '(
 Explanation: Once again, you left out a parenthesis at the end. It is crucial. There always has to be a starting and ending paranthesis.
 
 Mistake 13:
-I said: 'liz you are in the way'. You said '(Safe, Liza)'.
+I said: 'I just emptied this rack a7, send it back'. You said: 'Understood! Based on the text you provided, I believe the use case that matches is "Send washing rack A7 to wash." Please provide the next text for me to analyze.'. You should've said: (Return, A7).
+Explanation: You should only respond in the format which we declared, which is command and ID in a paranthesis. No free text.
+
+Mistake 14:
+I said: 'I just emptied rack A6, send it back.'. You said: '(Send, A6)'. You should've said: '(Return, A6)'
+Explanation: There is no command called send. You know that racks are emptied on the clean side, and once that is done, their are sent to the dirty side through the return hatch. Return is therefore the desired sentence.
+
+Mistake 15:
+I said: 'I just empty the rack A2, send it back.'. You said: '(Wash, A2)'. You should've said '(Return, A2)'
+Explanation: You know that racks are emptied on the clean side, and once that is done, their are sent to the dirty side through the return hatch. Return is therefore the desired sentence
 """
