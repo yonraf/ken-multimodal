@@ -49,7 +49,7 @@ Explanation: There always has to be a starting and ending paranthesis when decla
 
 Mistake 6:
 I said: 'move john to safe position'. You said: '(Move, John, Safe Position'. You should've said (Safe, John)
-Explanation: You know that there are only 5 action words (wash, move, return, cancel, safe). And the user can only trigger one. This userinput refers to the 'safe' action, and not to the move action. The user asks for the robot to be moved out of the way.
+Explanation: You know that there are only 5 action words (wash, move, return, cancel, safe). And the user can only trigger one. This userinput refers to the 'safe' action, and not to the move action. The user asks for the robot to be moved out of the way. And remember to apply the ending paranthesis after the ID.
 
 Mistake 7:
 I said: 'im done with D5, send it to the dirty side'. You said: '(Wash, D5)'. You should've said: (return, D5)
@@ -57,7 +57,7 @@ Explanation: You know that for a rack to go from the clean side to the dirty sid
 
 Mistake 8:
 I said: 'im done with D5, send it to the dirty side'. You said: '(Send, D5, Dirty Side'. You should've said: (return, D5)
-Explanation: There is no action called 'Send', or 'Dirty Side'. You know which 5 commands you can use, and how the elements are identified. Use only these. Based on the sentence, we know that this concerns a rack on the clean side, which should be moved to the dirty side. This is done through the hatch.
+Explanation: There is no action called 'Send', or 'Dirty Side'. You know which 5 commands you can use, and how the elements are identified. Use only these. Based on the sentence, we know that this concerns a rack on the clean side, which should be moved to the dirty side. This is done through the hatch. And remember to apply the ending paranthesis after the ID.
 
 Mistake 9:
 I said: 'relocate rack C2 to position 3'. You said: '(Move, C2, Position 3)'. You should've said: (move, C2, 3)
@@ -66,4 +66,15 @@ Explanation: Positions are identified by a number only. You should not include t
 Mistake 10:
 I said: 'that pretty cool to wash'. You said: '(Wash, A9)'. You should've said: (None)
 Explanation: The text from the user does not include any rack ID. Where did you get A9 from? As the text does not intend for the wash of a rack, you can't link it to a usecase. I is therefore None.
+
+Mistake 11:
+I said: 'send michael to safe position'. You said: '(Safe, Michael'. You should've said: '(Safe, Michael)'
+Explanation: There is missing a parenthesis at the end. It is crucial. There always has to be a starting and ending paranthesis.
+
+Mistake 12:
+I said: 'move D2 to location 5'. You said '(Move, D2, 5'. You should've said: '(Move, D2, 5)'
+Explanation: Once again, you left out a parenthesis at the end. It is crucial. There always has to be a starting and ending paranthesis.
+
+Mistake 13:
+I said: 'liz you are in the way'. You said '(Safe, Liza)'.
 """
