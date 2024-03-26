@@ -1,4 +1,4 @@
-from flask import request
+import requests
 from util import get_rack_id, get_position_id
 import re
 
@@ -9,25 +9,29 @@ def handle_wash(command):
     print("Sending Rack", command[1]," to wash")
 
     rack_id = get_rack_id(command[1])
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"    
-    response = request.post(url)
-    print(response)
+    if rack_id != None:
+        url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"    
+        response = requests.post(url)
+        print(response)
+        return "Success"
+    return "Failure"
+    
 
 def handle_move(command):
     print("Moving rack ", command[1], " to location ", command[2])
-    
-    rack_id = get_rack_id(command[1])
-    position_id = get_position_id(command[2])
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
-    response = request.post(url)
-    print(response)
+    if rack_id is not None or position_id is not None:
+        rack_id = get_rack_id(command[1])
+        position_id = get_position_id(command[2])
+        url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
+        response = requests.post(url)
+        return "Success"
 
 def handle_return(command):
     print("Returning rack ", command[1])
 
     rack_id = get_rack_id(command[1])
     url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"    
-    response = request.post(url)
+    response = requests.post(url)
 
 def handle_safe(command):
     print("Moving Robot ", command[1]," to safe position")

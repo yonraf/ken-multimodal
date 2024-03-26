@@ -1,6 +1,6 @@
 import json
 
-f = open('ids.json')
+f = open('mockup.json')
 data = json.load(f)
 
 def get_rack_id(name):

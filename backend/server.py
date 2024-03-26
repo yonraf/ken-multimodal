@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, send_from_directory
 import requests
 import json
 from flask_cors import CORS
@@ -8,8 +8,18 @@ from handler import handle_command
 
 app = Flask(__name__)
 CORS(app)
-#model = whisper.load_model('small').to(device)  # Initialize Whisper or any other speech recognition library
+
 model = WhisperModel('small', compute_type="int8")
+
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+@app.route('/files/<path:filename>')
+def serve_file(filename):
+    directory = 'static/tm-my-audio-model/'
+
+    return send_from_directory(directory, filename)
 
 @app.route('/process', methods=['POST'])
 def handle_request():
