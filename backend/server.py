@@ -38,6 +38,25 @@ def transcribe():
     handle_command(result)
     return result
 
+# ----- JSON FUNCT -----
+f = open('ids.json')
+data = json.load(f)
+
+def get_rack_id(name):
+    for rack in data["racks"]:
+        for key, value in rack.items():
+            if key == name:
+                return value
+    return None
+
+def get_position_id(name):
+    for rack in data["positions"]:
+        for key, value in rack.items():
+            if key == name:
+                return value
+    return None
+
+
 # ----- COMMAND HANDLER -----
 
 # Regular expression pattern to match command structures
@@ -45,21 +64,27 @@ pattern = r"\((\w+), (\w+)(?:, (\w+))?\)"
 
 def handle_wash(command):
     print("Sending Rack", command[1]," to wash")
-    #url = f"http://172.22.102.39:3000/createJob?rackId={rack_id}&jobType=1"    
-    #response = request.post(url)
+
+    rack_id = get_rack_id(command[1])
+    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"    
+    response = request.post(url)
+    print(response)
 
 def handle_move(command):
     print("Moving rack ", command[1], " to location ", command[2])
     
-    # need to convert both rack_id and position_id
-    #url = f"http://172.22.102.39:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
-    #response = request.post(url)
+    rack_id = get_rack_id(command[1])
+    position_id = get_position_id(command[2])
+    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
+    response = request.post(url)
+    print(response)
 
 def handle_return(command):
     print("Returning rack ", command[1])
-    # FETCH ID OF RACK
-    #url = f"http://172.22.102.39:3000/createJob?rackId={rack_id}&jobType=7"    
-    #response = request.post(url)
+
+    rack_id = get_rack_id(command[1])
+    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"    
+    response = request.post(url)
 
 def handle_safe(command):
     print("Moving Robot ", command[1]," to safe position")
