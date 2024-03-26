@@ -99,7 +99,7 @@ function SendAudioToEndpoint(blob) {
     const formData = new FormData();
     formData.append('audio', blob);
 
-    fetch('http://localhost:5000/transcribe', {
+    fetch('http://localhost:5000/process', {
         method: 'POST',
         body: formData
     })
