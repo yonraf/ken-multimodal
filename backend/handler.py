@@ -1,43 +1,47 @@
-import requests
-from util import get_rack_id, get_position_id
 import re
+import requests
+import json
+from util import get_rack_id, get_position_id
 
-# Regular expression pattern to match command structures
-pattern = r"\((\w+), (\w+)(?:, (\w+))?\)"
+# Regular expression pattern to match JSON objects
+json_pattern = r"\{.*?\}"
 
 def handle_wash(command):
-    print("Sending Rack", command[1]," to wash")
+    print("Sending Rack", command['rack_id'], " to wash")
 
-    rack_id = get_rack_id(command[1])
-    if rack_id != None:
-        url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"    
+    rack_id = get_rack_id(command['rack_id'])
+    if rack_id is not None:
+        url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"
         response = requests.post(url)
         print(response)
         return "Success"
     return "Failure"
-    
 
 def handle_move(command):
-    print("Moving rack ", command[1], " to location ", command[2])
-    if rack_id is not None or position_id is not None:
-        rack_id = get_rack_id(command[1])
-        position_id = get_position_id(command[2])
+    print("Moving rack ", command['rack_id'], " to location ", command['position_id'])
+    
+    rack_id = get_rack_id(command['rack_id'])
+    position_id = get_position_id(command['position_id'])
+    if rack_id is not None and position_id is not None:
         url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
         response = requests.post(url)
+        print(response)
         return "Success"
 
 def handle_return(command):
-    print("Returning rack ", command[1])
-
-    rack_id = get_rack_id(command[1])
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"    
-    response = requests.post(url)
+    print("Returning rack ", command['rack_id'])
+    rack_id = get_rack_id(command['rack_id'])
+    if rack_id is not None:
+        url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"
+        response = requests.post(url)
+        print(response)
+        return "Success"
 
 def handle_safe(command):
-    print("Moving Robot ", command[1]," to safe position")
+    print("Moving Robot ", command['robot_id'], " to safe position")
 
 def handle_cancel(command):
-    print("Aborting job with rack ", command[1])
+    print("Aborting job with rack ", command['rack_id'])
 
 def handle_none(command):
     print("It does not seem like you intend to perform a task")
@@ -52,17 +56,18 @@ command_handlers = {
     "none": handle_none
 }
 
-def handle_command(command):
-    # Find command in the input string
-    match = re.search(pattern, command.lower())
-
+def handle_command(command_str):
+    # Find JSON object in the input string
+    match = re.search(json_pattern, command_str)
     if match:
-        command = match.groups()
-        action = command[0]
-        handler = command_handlers.get(action)
+        command_json = match.group(0)
+        command = json.loads(command_json)
+        use_case = command.get('use_case')
+        handler = command_handlers.get(use_case)
         if handler:
             handler(command)
         else:
-            print("No handler found for command:", action)
+            print("No handler found for command:", use_case)
     else:
-        print("No valid command found in the input string.")
+        print("No valid JSON object found in the input string.")
+
