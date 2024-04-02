@@ -51,6 +51,34 @@
     <script src="{{url_for('static', filename='js/script.js')}}"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands@0.4.0/dist/speech-commands.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script>
+        const socket = io();
+        socket.on('connect', () => {
+         console.log('Connected to server');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.on('message_from_server', (message) => {
+            if(message == '1'){
+                document.getElementById('state').innerHTML = "Transcribing audio...";
+
+            } else if (message == '2') {
+                document.getElementById('state').innerHTML = "Registrering command...";
+
+            } else if (message == '3'){
+                document.getElementById('state').innerHTML = "Performing action...";
+
+            } else if (message == '4') {
+                document.getElementById('state').innerHTML = "Ready to recieve new instruction...";
+            }
+        });
+    </script>
+
+
 </head>
 
 <body>
@@ -60,6 +88,9 @@
         <button type="button" onclick="init()">Start</button>
         <br><br>
         <div id="label-container"></div>
+        <br>
+        <div id="state">Ready to recieve new instruction...</div>
+        <br>
         <audio id="recordedAudio" controls></audio> <!-- Audio element for playback -->
     </div>
 </body>
