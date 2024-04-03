@@ -4,10 +4,14 @@ import json
 from flask_cors import CORS
 from faster_whisper import WhisperModel
 from handler import handle_command
-
+from flask_socketio import SocketIO 
+import time
 
 app = Flask(__name__)
 CORS(app)
+
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app)
 
 model = WhisperModel('small', compute_type="int8")
 
@@ -25,11 +29,20 @@ def serve_file(filename):
 def handle_request():
     audio_file = request.files['audio']
     audio_file.save('audio_received.wav')
+    socketio.emit('message_from_server', "1")
 
     transcription = transcribe()
+    socketio.emit('message_from_server', "2")
+
+
     response = message(transcription)
 
+    socketio.emit('message_from_server', "3")
+
     handle_command(response)
+
+    time.sleep(2)
+    socketio.emit('message_from_server', "4")
 
     return "Success", 200, {"Access-Control-Allow-Origin": "*"}
 
@@ -59,5 +72,14 @@ def message(text):
     return result
 
 
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+
 if __name__ == '__main__':
-    app.run(port=5000)
+    socketio.run(app, port=5000)
