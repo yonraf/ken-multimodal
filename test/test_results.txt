@@ -1,0 +1,126 @@
+Test - can you move rack a7 to position 2 thank you:
+
+Trans:  Can you move rack a7 to position 2? Thank you.
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "2"}
+___________
+
+Test - move a07 from station 1 to station 2:
+
+Trans:  Move a zero seven from station one to station two
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "2"}
+___________
+
+Test - move a07 to soiled area:
+
+Trans:  Move A07 to Soilet area.
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "1"}\n\n
+___________
+
+Test - move a07 to wash:
+
+Trans:  Move a 07 to wash
+LLM:  {"use_case": "wash", "rack_id": "A7"}
+___________
+
+Test - move a7 to 2:
+
+Trans:  Move A7 to 2.
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "2"}
+___________
+
+Test - move rack a07 from 01 to 02:
+
+Trans:  move rack 807 from 01 to 02
+LLM:  {"use_case": "relocate", "rack_id": "807", "position_id": "02"}
+___________
+
+Test - move rack a07 to wash chamber:
+
+Trans:  Move Rack 807 towards Tampa.
+LLM:  {"use_case": "relocate", "rack_id": "807", "position_id": "Tampa"}
+___________
+
+Test - move rack a7 to station 02:
+
+Trans:  Move, rack, A7 to station O2.
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "O2"}
+___________
+
+Test - please move a7 to dirty side:
+
+Trans:  please move a7 to the dirt side to the clean side
+LLM:  {"use_case": "return", "rack_id": "A7"}
+___________
+
+Test - please move a7 to station 2:
+
+Trans:  Please move A7 to station 2.
+LLM:  {"use_case": "relocate", "rack_id": "A7", "position_id": "2"}
+___________
+
+Test - please move a7 to the dish wash:
+
+Trans:  please move a7 to the dishwasher
+LLM:  {"use_case": "wash", "rack_id": "A7"}
+___________
+
+Test - please move rack a07 to position 2 thank you:
+
+Trans:  please move rag a 0 7 to position 2 thank you
+LLM:  {"use_case": "relocate", "rack_id": "A07", "position_id": "2"}
+___________
+
+Test - please return rack a7 to clean side:
+
+Trans:  Please return rack a7 to clean sign. Thank you
+LLM:  {"use_case": "return", "rack_id": "A7"}
+___________
+
+Test - please send rack a7 to wash thank you:
+
+Trans:  please send rag a7 to wash, thank you
+LLM:  {"use_case": "wash", "rack_id": "A7"}
+___________
+
+Test - rack a07 is ready for wash:
+
+Trans:  Rek 8-0-7 is ready for wash.
+LLM:  {"use_case": "wash", "rack_id": "Rek 8-0-7"}
+___________
+
+Test - return a7:
+
+Trans:  Return A7
+LLM:  {"use_case": "return", "rack_id": "A7"}
+___________
+
+Test - return rack a7 to unclean side:
+
+Trans:  return rack a7 to on-prem side
+LLM:  {"use_case": "return", "rack_id": "A7"}
+___________
+
+Test - send a07 to return hatch:
+
+Trans:  S�t A07 til return hatch
+LLM:  {"use_case": "return", "rack_id": "A07"}
+___________
+
+Test - send rack a07 to washer:
+
+Trans:  S�t r�k A07 til Varsha
+LLM:  {"use_case": "relocate", "rack_id": "A07", "position_id": "Varsha"}
+___________
+
+Test - send rack a7 to wash please:
+
+Trans:  Send rack a7 to wash please
+LLM:  {"use_case": "wash", "rack_id": "A7"}
+___________
+
+Test - wash a7:
+
+Trans:  Wash A7
+LLM:  {"use_case": "wash", "rack_id": "A7"}
+___________
+

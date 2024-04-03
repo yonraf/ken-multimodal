@@ -26,7 +26,7 @@ def message(text):
     url = "http://localhost:11434/api/generate"
     headers = {"Content-Type": "application/json"}
     data = {
-        "model": "ken_llama",
+        "model": "ken_openchat",
         "prompt": text,
         "stream": False
     }

@@ -2,7 +2,7 @@ import sounddevice as sd
 import soundfile as sf
 import os
 
-def record_audio(duration=3, samplerate=44100):
+def record_audio(duration=5, samplerate=44100):
     print("Recording...")
     # Record audio
     recording = sd.rec(int(duration * samplerate), samplerate=samplerate, channels=1, dtype='int16')
