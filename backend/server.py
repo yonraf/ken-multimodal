@@ -19,6 +19,10 @@ model = WhisperModel('small', compute_type="int8")
 def index():
     return render_template("index.html")
 
+@app.route('/index2')
+def index2():
+    return render_template("index_2.html")
+
 @app.route('/files/<path:filename>')
 def serve_file(filename):
     directory = 'static/tm-my-audio-model/'

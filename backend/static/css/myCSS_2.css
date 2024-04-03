@@ -1,0 +1,502 @@
+
+/* Drop Down selectors*/
+select {
+	font-weight: 900;
+	font-family: 'Font Awesome\ 5 Free', 'sans-serif';
+}
+
+select option { 
+	font-weight: 900;
+	font-family: 'Font Awesome\ 5 Free', 'sans-serif';
+	padding: 60px
+}
+
+.form-control{
+	height: 100px;
+	font-size: 250%;
+}
+
+.LoginmodalBody{
+	height: 100px; 
+	padding: 10px; 
+	margin-bottom :  40px; 
+	font-size: 400%;
+}
+
+.loginPassword{
+	text-align: center; 
+	width: 100%; 
+	height: 100%
+}
+
+/* Clean/Unclean Check boxes */
+.al10-check{
+	display: block;
+	position: relative;
+	padding-left: 35px;
+	margin-bottom: 12px;
+	cursor: pointer;
+	font-size: 22px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.al10-check input{
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height:0;
+	width:0;
+}
+
+.checkmark{
+	position: absolute;
+	top:0;
+	left:0;
+	height:30px;
+	width:30px;
+	background-color: #e0e0e0;
+	border-radius: 4px;
+	padding: 4px;
+}
+
+.al10-check input:checked ~ .checkmark{
+	background-color: #5BC0DE;
+	border-radius: 4px;
+	padding: 4px;
+}
+
+.checkmark:after{
+	content: "";
+	position: absolute;
+	display: none;
+}
+
+.al10-check input:checked ~ .checkmark:after{
+	display: block;
+}
+
+.al10-check .checkmark:after{
+	left: 7px;
+	top: 4px;
+	width: 10px;
+	height: 15px;
+	border: solid white;
+	border-width:  0 3px 3px 0;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
+
+/* General body */
+body{
+	padding-top: 85px;
+	padding-bottom: 80px;
+}
+
+.deletes{
+	padding: 0;
+	border: none;
+	background: none;
+}
+
+.btn-file {
+	position: relative;
+	overflow: hidden;
+}
+
+.btn-file input[type=file] {
+	position: absolute;
+	top: 0;
+	right: 0;
+	min-width: 100%;
+	min-height: 100%;
+	font-size: 100px;
+	text-align: right;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	outline: none;
+	background: white;
+	cursor: inherit;
+	display: block;
+}
+
+.rackToOrderClass
+{
+	border: 1px solid black;
+	border-radius: 10px;
+	margin-bottom: 10px;
+	background-color: #eee;
+	width: 100%;
+	border-collapse: inherit;
+}
+
+.rackToOrderClass td
+{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+
+/*MKL: for when racks are locked to a job*/
+.disabled
+{
+	opacity: 0.4; 
+}
+
+.RobotReserved
+{
+	background-image: url("./robot-black.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	
+}
+
+.orderRackItem {
+	font-size: 30px;
+	/* padding-bottom: 10px; */
+}
+
+table#rackSelectionTable{
+	width: 100%;
+	border: 1px solid black;
+	background-color: #eee;
+	border-radius: 5px;
+}
+
+table#rackSelectionTable td{
+	padding:5px;
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+table#queueAll td{
+	text-align:center;
+}
+
+table#queueTable{
+	width:	100%;
+	border: 1px solid black;
+	background-color: #eee;
+}
+
+table#queueTable td{
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+table#queueTableMyJob{
+	width:	100%;
+	border: 1px solid black;
+	background-color: #eec;
+}
+
+table#queueTableMyJob td{
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+
+table#loginFigCaption td{
+	padding-left: 6px;
+	padding-right: 6px;
+}
+
+#loginImageLoggedIn {
+	opacity: 0.4;
+	filter: alpha(opacity=40); /* msie */
+    background-color: #000;
+}
+
+/* Slider/Toggle switch */
+.switch {
+  --dimension: 20px;
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  --bg-color: #5BC0DE;
+}
+
+.switch input {display:none;}
+
+.switch-text {
+	position: relative;
+	margin-left: 8px;
+	bottom: 14px;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 5px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: var(--dimension);
+  width: var(--dimension);
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+  border-radius: 3px;
+}
+
+input:checked + .slider {
+  background-color: var(--bg-color);
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px var(--bg-color);
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(var(--dimension));
+  -ms-transform: translateX(var(--dimension));
+  transform: translateX(var(--dimension));
+}
+
+/* End Slider/Toggle switch */
+
+
+.rackManDiv {
+	/* background-color: #31b0d5; */
+	/* padding-bottom: 2px; */
+	border: #000000;
+	border-style: solid;
+	border-radius: 5px;
+	border-width: 1px;
+	margin-bottom: 10px;
+	/* padding-left: 5px; */
+	padding-top: 10px;
+	padding-bottom: 10px;
+	/* height: 50px; */
+	/* width: 250px; */
+	text-align: center;
+
+}
+
+.rackManDiv.isReservedForPosition {
+	/* background-color: #31afd580; */
+	border: #ff0000;
+	border-width: 2px;
+	border-style: solid;
+}
+
+select option:disabled {
+	background-color: #f0f0f0;
+}
+
+
+.washerInfo {
+	background-color: #f0f0f0;
+	border: #000000;
+	border-style: solid;
+	border-width: 2px;
+	border-radius: 10px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+}
+
+.washerInfo img {
+	/* align: center; */
+	display: block;
+	/* margin-left: auto; */
+	/* margin-right: auto; */
+	float: right;
+	/* width: 75%; */
+}
+
+.washerInfo td:nth-child(2)::before {
+	content: "";
+	padding-left: 10px;
+}
+
+.imgBlur {
+	-webkit-filter: blur(5px); /* Safari 6.0 - 9.0 */
+	filter: blur(2px);
+}
+
+
+.grid-container {
+	display: grid;
+	grid-template-columns: auto auto;
+}
+	
+.grid-item {
+	/* background-color: rgba(255, 255, 255, 0.8); */
+	border-width: 1px;
+	border-style: solid;
+	border-color: rgba(0, 0, 0, 0.8);
+	border-radius: 10px;
+	padding: 10px;
+	margin-top: 10px;
+	margin-left: 5px;
+	margin-right: 5px;
+	font-size: 30px;
+	text-align: center;
+}
+
+.washIdle {
+	background-color: whitesmoke;
+}
+
+.washCompleted {
+	background-color: chartreuse;
+}
+
+.washError {
+	background-color: red;
+}
+
+.washWashing {
+	background-color: aqua;
+}
+
+.washStatusHead {
+	font-size: 60px;
+	font-weight: bolder;
+}
+
+.washStatusTime {
+	font-size: 40px;
+}
+
+
+.queue {
+	font-size: x-large;
+	width: 100%;
+	margin-bottom: 10px;
+	border-radius: 10px;
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
+	border-collapse: inherit;
+	background-color: #eee;
+}
+
+/*MKL: Rack status*/
+.RackStatus-ReadyOnUnclean{
+	background-color:#eee;
+}
+/*MKL: Rack status*/
+.RackStatus-WaitingForWash{
+	background-color:#28a745;
+}
+/*MKL: Rack status*/
+.RackStatus-Washing{
+	background-color:#007bff;
+}
+/* MKL: Rack status*/ 
+.RackStatus-ReadyOnclean{ 
+	background-color:#eee;
+}
+/*MKL: Rack status*/
+.RackStatus-WaitingForReturn{
+	background-color:#28a745;
+}
+/*MKL: Rack status*/
+.RackStatus-Returning{
+	background-color:#007bff;
+}
+/*MKL: Rack status*/
+.RackStatus-HandledManually{
+	background-color:#f8f9fa;
+}
+/*MKL: Rack status*/
+.RackStatus-WaitingForRobot{
+	background-color:#28a745;
+}
+/*MKL: Rack status*/
+.RackStatus-OnRobot{
+	background-color:#28a745;
+}
+
+.RackStatus-InProgress{
+	background-color:#f8f9fa;
+}
+/*MKL: Rack status*/
+.RackStatus-OnRobotError
+{
+	background-color:#dc3545;
+}
+/*MKL: Rack status*/
+.RackStatus-Lost{
+	background-color:#fcf003;
+}
+/*MKL: Rack status*/
+.RackStatus-OutOfService
+{
+background-color: #fcf003;
+}
+/*MKL: Line between clean and unclean robots*/
+#borderline{
+	border-top: 1px dashed;
+	margin: 0;
+}
+
+/*MKL: connection icon*/
+#serverConnection{
+	padding-top: 25px;
+	margin-left: -30px;
+}
+.fa-wifi{
+	color:red;
+}
+
+.blink {
+	animation: blink 2s steps(5, start) infinite;
+	-webkit-animation: blink 1s steps(5, start) infinite;
+  }
+  @keyframes blink {
+	to {
+	  visibility: hidden;
+	}
+  }
+  @-webkit-keyframes blink {
+	to {
+	  visibility: hidden;
+	}
+  }
+
+/* .washStatusTime::after{
+	content: " s";
+} */
+/* Make the infoscreen adjust to the screen size */
+@media only screen and (max-width: 600px){
+	.grid-container { grid-template-columns: auto;};
+	.grid-item { width:100%; };
+	/* .washStatusHead {font-size: 20px;}; */
+}
+@media only screen and (min-width: 600px){
+	.grid-container { grid-template-columns: auto auto;};
+	.grid-item { width:50%; };
+	/* .washStatusHead {font-size: 25px;}; */
+}
+@media only screen and (min-width: 768px){
+	.grid-container { grid-template-columns: auto auto auto;};
+	.grid-item { width:33.33%; };
+	/* .washStatusHead {font-size: 40px;}; */
+}
+@media only screen and (min-width: 992px){
+	.grid-container { grid-template-columns: auto auto auto auto;};
+	.grid-item { width:25%; };
+	/* .washStatusHead {font-size: 60px;}; */
+}
+/* @media only screen and (min-width: 1200px){
+	.grid-container { grid-template-columns: auto auto auto auto auto;}
+} */
+

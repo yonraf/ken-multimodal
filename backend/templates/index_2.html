@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<!--
+$Rev: 15777 $
+$LastChangedDate: 2022-08-03 13:28:12 +0200 (Wed, 03 Aug 2022) $
+$Author: jka $
+
+Daily use page. Login, job ordering and user management
+Dev note: Every line of text that needs to be translated, needs to be written in english and be 
+enclosed in the following format:
+ <div data-al10-lang="TAG FROM DATABASE">TEXT</div>
+ <div data-al10-lang=""></div>
+-->
+<html>
+	<head>
+		<title data-al10-lang="">KEN AL10</title>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<link id="distributorLogo_small" rel="shortcut icon" href="{{url_for('static', filename='img/KEN-brand-logo-small.png')}}"/>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+		<link href="{{url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+		<script src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+		<script src="{{url_for('static', filename='js/bootstrap-select.min.js')}}" ></script>
+		
+		<link href="{{url_for('static', filename='css/myCSS_2.css')}}"  rel="stylesheet">
+		
+		<link href="{{url_for('static', filename='css/fontawesome-all.css')}}" rel="stylesheet">
+		<script type="text/javascript" src="./crypto-js-sha512.js"></script>
+        
+	</head>
+
+	<body>
+		<!-- Nav Bar Start  -->
+		<nav class="navbar navbar-default navbar-fixed-top" style="min-height: 80px;"> 										
+			<div class="container-fluid">
+				<!-- <div class="navbar-header">	</div> -->
+			
+				<div id="navbar" class="navbar-collapse collapse">
+					<ul class="nac navbar-nav navbar-left" id="serverConnection">
+						<div><span id="connectionStatus"></span>
+						</div>
+					</ul>
+
+					<!-- Robots clean and unclean Display-->
+					<ul class="nac navbar-nav navbar-left">	
+						<i id="top_robot_unclean" class="fas fa-allergies fa-2x" style="padding-top: 5px; padding-right: 2px;"></i>
+						<hr id="borderline"/>
+						<i id="top_robot_clean" class="fas fa-hand-sparkles fa-2x" style="padding-top: 5px; padding-bottom: 2px;"></i>
+					</ul>
+
+					<!-- Robots sterilizer Display -->
+					<ul class="nac navbar-nav navbar-left">
+						<i id="top_robot_sterile" class="fas fa-virus-slash fa-2x" style="padding-top: 25px;"></i>
+					</ul>
+
+
+					<!-- Option menu + BigScreen Show -->
+					<ul class="nav navbar-nav navbar-right">
+						<li>
+							<a data-toggle="modal" data-target="#bigScreenModal"><span style="font-size: 50px;" id="bigScreenButton" class="fas fa-shower"></span></a>
+						</li>
+						<li id="header_login" style="cursor:pointer" data-toggle="collapse" data-target=".navbar-collapse.in" onclick="optionPromt()">
+							<a><span style="font-size: 50px;" id="glyphLogin" class="fas fa-sign-in-alt"></span></a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+		<!-- Nav Bar End  -->
+
+		<div class="container-fluid"> 																<!-- Main body -->
+			<div class="row" id="mainScreen" style="display:block">									<!-- The daily use home screen -->
+				<div class="col-sm-6">																<!-- NEW Job control -->
+					<h2 class="dict_racks" id = "rackTitle">Racks</h2>
+				</div>
+				<div class="col-sm-6">																<!-- Job Queue -->
+					<h2 class="dict_jobqueue">Job queue</h2> 
+				</div>
+				<br>
+				<div class="col-sm-6" style="height: 75vh; overflow-y: scroll;">																<!-- NEW Job control -->
+					<div id="rack_list"></div>
+				</div>
+				<div class="col-sm-6" style="height: 75vh; overflow-y: scroll;">																<!-- Job Queue -->
+					<div id="queueTableDiv"></div>
+				</div>
+			</div>
+
+			<div id="modalsContainer"></div> <!-- PSK Create Job dialog -->
+			<div id="rackOrderModal" class="modal fade" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<div class="modal-title dict_createjob" style="text-align: center;font-size: 40px;" data-al10-lang="" id="createJobTitle">
+								Create job
+							</div>
+							<h3 style="text-align: center;">
+								<div id="create_job_rack">RackName - RackType</div>
+							</h3>
+							<input type="number" id="OrderRackId" style="display:none">
+							<input type="number" id="OrderRackRole" style="display:none">
+						</div>
+						<div class="modal-body">
+							<div id="orderType">
+								<div class="row">
+									<div class="col-xs-5">
+										<div>          <!--PSK Position Choice DLG-->
+											<div class="row" id="create_job_robot" onclick="MoveRackToPosition()" style="text-align: center">
+												<img id="top_robot_unclean_robot" src="{{url_for('static', filename='img/robot-black.png')}}"  height="30px" style="vertical-align: bottom;">
+												<i class="fas fa-long-arrow-alt-right orderRackItem"></i>
+												<i class="fas fa-map-marker-alt orderRackItem"></i>
+												<br>
+												<div data-al10-lang="" class="dict_toposition">To position</div>
+											</div>
+											<hr>
+											<div class="row" id="create_job_iq" onclick="ChooseSendToIQOrder()" style="text-align: center">
+													<img id="top_robot_unclean_robot" src="{{url_for('static', filename='img/robot-black.png')}}" height="30px" style="vertical-align: bottom;">
+												<i class="fas fa-long-arrow-alt-right orderRackItem"></i>
+												<span id="to_clean_or_hatch_icon" class="fas fa-shower orderRackItem"></span> 
+												<br>
+												<div id="to_clean_or_hatch_label" data-al10-lang="" class="to_wash">To wash</div>
+											</div>
+											<hr>
+											<div class="row" id="create_job_manual" onclick="ManuallyMoveRack()" style="text-align: center">
+												<i class="fas fa-map-marker-alt orderRackItem"></i>
+												<br>
+												<div data-al10-lang="" class="dict_placerack">Place Rack</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-7" style="text-align: center">
+										<img src="{{url_for('static', filename='img/2918161.png')}}" height="200px">
+									</div>
+								</div>
+							</div>
+
+							<!-- Send to position Dialog START -->
+							<div id="moveFromOrder" style="display:none"> 
+									<label class="label label-info dict_fromposition" style="font-size: 15px;" for="moveRackFromPosition" data-al10-lang="">
+											From position
+										</label>
+
+								<select class="form-control" id="moveRackFromPosition" disabled=true></select>
+							</div>
+
+							<div id="moveToOrder" style="display:none">
+								<br>
+								<label class="label label-info dict_toposition" style="font-size: 15px;" for="moveRackToPosition" data-al10-lang="">
+									To position
+								</label>
+								<select class="form-control" id="moveRackToPosition" onchange="RevealHiddenSelectorsIfConidtionIsMet()"></select>
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) START -->
+								<div id="moveToClientOrder" style="display:none">
+									<br>
+									<label class="label label-info dict_client" style="font-size: 15px;" for="moveToClientSelector" data-al10-lang="">
+										Client
+									</label>
+									<select class="form-control" id="moveToClientSelector"></select>
+								</div>
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) END -->
+
+								<!-- Option active: Sterilizer loader support (for choosing sterilization program ) START -->
+								<div id="moveToProgramDiv" style="display:none">
+									<br>
+									<label class="label label-info dict_program" style="font-size: 15px;" for="moveToProgramSelector" data-al10-lang="">
+										Program
+									</label>
+									<select class="form-control" id="moveToProgramSelector"></select>
+								</div>
+								<!-- Option active: Sterilizer loader support (for choosing sterilization program ) END -->
+
+								<div class="modal-footer">
+									<hr>
+									<span class="far fa-arrow-alt-circle-left" 	style="float:left; 	font-size: 60px;" onclick="UndoMoveRackToPosition()"></span>
+									<span class="far fa-check-circle" 			style="float:right;	font-size: 60px;" onclick="PlaceMoveRackOrder()"></span>
+								</div>
+							</div>
+							<!-- Send to position Dialog END -->
+
+
+							<!-- Send to Machine Dialog START -->
+							<div id="washOrder" >
+								<br>
+								<label id="labelIQ" style="font-size: 15px;" class="label label-info" for="create_job_iq" data-al10-lang="">
+									To machine
+								</label>
+
+								<div class="row disabled" id="create_job_iq" onclick="ChooseSendToIQOrder()" style="text-align: center ; border: 1px solid grey; margin: 0 3px; padding:20px 2px; ">
+
+									<img id="top_robot_unclean_robot" src="{{url_for('static', filename='img/robot-black.png')}}" height="30px" style="vertical-align: bottom;">
+
+									<i class="fas fa-long-arrow-alt-right orderRackItem"></i>
+									<span id="to_clean_or_hatch_icon_inner" class="fas fa-shower orderRackItem"></span> 
+									<br>
+									<div id="to_clean_or_hatch_label_inner" style="font-size: 20px;" data-al10-lang="">To wash</div>
+								</div>
+
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) START -->
+								<div id="toWashClientOrder" style="display:none">
+									<br>
+									<label class="label label-info dict_client" style="font-size: 15px;" for="toWashClientSelector" data-al10-lang="">
+										Client
+									</label>
+									<select class="form-control" id="toWashClientSelector"></select>
+								</div>
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) END -->
+	
+								<!-- Option active: Sterilizer loader support (for choosing sterilization program ) START -->
+								<div id="toSterilizerProgramDiv" style="display:none">
+									<br>
+									<label class="label label-info dict_program" style="font-size: 15px;" for="toSterilizerProgramSelector" data-al10-lang="">
+										Program
+									</label>
+									<select class="form-control" id="toSterilizerProgramSelector"></select>
+								</div>
+								<!-- Option active: Sterilizer loader support (for choosing sterilization program ) END -->
+								
+
+								<div class="modal-footer">
+									<hr>
+									<span class="far fa-arrow-alt-circle-left" 	style="float:left; 	font-size: 60px;"  	onclick="UndoMoveRackToPosition()"></span>
+									<span class="far fa-check-circle"			style="float:right;	font-size: 60px;"	onclick="PlaceSendToIQOrder()" ></span>
+								</div>
+							</div>
+							<!-- Send to Machine Dialog END -->
+							
+							<!-- Place Rack Dialog START -->
+							<div id="manualOrder" style="">
+								<div id="manualMoveWasherDiv">
+									<label class="label label-info dict_placerack" style="font-size: 15px;" for="manualMoveRackToPosition" data-al10-lang="">	Placer Rack	</label>
+									<select class="form-control" id="manualMoveRackToPosition">	</select>
+								</div>
+								<div id="manualMoveSterileDiv" style="display: block">
+									<input type="number" id="manualMoveRackToPosition_sterile" style="display:none;">	</select>									
+									<label class="label label-info dict_placerack" style="font-size: 15px;" for="manualMoveRackToPosition_sterile_humanReadable" data-al10-lang="">	Placer Rack	</label>
+									<select class="form-control" id="manualMoveRackToPosition_sterile_humanReadable" disabled=true>
+										<option value="robot" class="dict_robot">Robot</option>
+										<option value="table" class="dict_table">Table</option>
+									</select>
+								</div>
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) START -->
+								<div id="placeRackClientOrder" style="display:none">
+									<br>
+									<label class="label label-info dict_client" style="font-size: 15px;" for="placeRackClientSelector" data-al10-lang="">
+										Client
+									</label>
+									<select class="form-control" id="placeRackClientSelector"></select>
+								</div>
+								<!-- Option active: Support for multiple clients (for choosing client for job in selector if enabled ) END -->
+								
+
+								<div class="modal-footer">
+									<hr>
+									<span id="goBackButton_placeRack" class="far fa-arrow-alt-circle-left" 	style="float:left; font-size: 60px;"onclick="UndoMoveRackToPosition()"></span>
+									<span class="far fa-check-circle"			style="float:right;font-size: 60px;" onclick="HandleRackMaually()" ></span>
+								</div>								
+							</div>
+							<!-- Place Rack Dialog END -->
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<!-- Position in 3401 error dialog box (choose which rack is placed on errored position) -->
+			<div id="positionWithUnknownRackModal" class="modal fade" role="dialog">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<div class="modal-title" style="text-align: center;font-size: 40px;" data-al10-lang="" id="positionWithUnknownRack_title">
+								Unkown rack on "POSITION"
+							</div>
+							<h3 style="text-align: center;">
+								<div id="positionWithUnknownRack_text">The robot unsuccessfully attempted to deliver a rack to "POSITION". Choose which rack is currently placed on "POSITION". If no rack is placed, call for technical assistance to find error cause.</div>
+							</h3>
+							<input type="number" id="OrderRackId" style="display:none">
+						</div>
+						<div class="modal-body">
+							<!-- Place Rack Dialog START -->
+							<input type="number" id="positionInError_posId" style="display:none">
+							<div id="unkownRackSelector_div" style="display: block">
+								<label id="unkownRackSelector_label" class="label label-info" for="unkownRackSelector_select" data-al10-lang="">Choose rack placed on "POSITION"</label>
+									
+								<select class="form-control" id="unkownRackSelector_select">	</select>
+
+								<div class="modal-footer">
+									<hr>
+									<span id="goBackButton_placeRack" class="fas fa-ban fa-lg" 	style="float:left; font-size: 60px;"onclick="HidePositionWithUnknownRackModal()"></span>
+									<span class="far fa-check-circle" style="float:right;font-size: 60px;" onclick="SubmitPositionWithUnknownRack()" ></span>
+								</div>
+							</div>
+							<!-- Place Rack Dialog END -->
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<!--			JOB QUEUE MODAL STARTS		-->
+			<div id="modalsContainer"></div> 
+			<div id="jobQueueModal" class="modal fade" role="dialog">
+				<div class="modal-dialog">
+	
+					<div class="modal-content">
+						<div class="modal-header">
+							<div class="modal-title dict_jobqueue" style="text-align: center;font-size: 40px;" data-al10-lang="">
+								Job queue
+							</div>
+							<h3 style="text-align: center;">
+								<div id="job_modal_rack_name">RackName - RackType</div>
+							</h3>
+							<input type="number" id="OrderJobId" style="display:none">
+						</div>
+						<div class="modal-body">
+							<div id="orderType">
+								<div class="row">
+									<div class="col-xs-5">
+										<div>       
+											<div class="row" id="finishJobManually"  style="text-align: center">	
+												<i class="fas fa-people-carry moveRackManually orderRackItem"></i>										
+												<i class="fas fa-long-arrow-alt-right orderRackItem"></i>
+												<i class="fas fa-map-marker-alt orderRackItem"></i>
+												<br>
+												<div data-al10-lang="" class="dict_manuallymoved">Manually moved</div>
+											</div>
+											<hr>
+											<div class="row" id="deleteJobManually"  style="text-align: center">
+												<i class="fas fa-trash-alt orderRackItem"></i>
+												<br>
+												<div id="deletejoblabel" data-al10-lang="" class="dict_deletejob">Delete job</div>
+											</div>
+											<hr>
+											<div class="row" id="jobPriority"  style="text-align: center">
+												<i class="fas fa-chevron-up orderRackItem"></i>
+												<br>
+												<div id="higherPriorityLabel" data-al10-lang="" class="dict_toppriority">Top Priority</div>
+											</div>
+										</div>
+									</div>
+									<div class="col-xs-7" style="text-align: center">
+										<img src="./2918161.png" height="200px">
+									</div>
+								</div>
+							</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--			JOB QUEUE MODAL ENDS 		-->
+
+
+		<!-- 			START OF Option MODAL  		-->
+		<div class="modal loginModal" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title"style="text-align: center;font-size: 40px;" id="OptionsModal"> Options</h5>
+					</div>
+					<div class="modal-body" id="LoginmodalBody" >
+
+
+						<!-- Select Position part  -->
+						<!-- <div id="openSelectPosition" style="display:block;" onclick="openSelectPosition()">
+							<h2>	<i class="fas fa-map-marker-alt"></i> <span class="dict_myworkposition">My Work Position</span> </h2>
+							<hr>
+						</div>
+
+						<div id="btnSelectPosition" style="display:none">
+							<select class="form-control" id="selectPositionSelector" onchange="changePosition();">	</select>
+
+						</div> -->
+
+
+						<!-- Select Language part  -->
+						<div id="openSelectLang" style="display:block;" onclick="openSelectLang()">
+							<h2>	<i class="fas fa-globe"></i> <span class="dict_language">Language</span> </h2>
+							<hr>
+						</div>
+
+						<div id="btnSelectLang" style="display:none">
+							<!--<h2>Select Language</h2>
+							<hr>-->
+							<div id=flagsSelectLang>		</div>
+						</div>
+
+
+						<!-- Technical login part -->
+						<div id="openTechnicalLogin" style="display:block;" onclick="openTechnicalLogin()">
+							<h2>	 <i class="fas fa-cog"></i> <span class="dict_login">Login</span>	</h2>
+							<hr>
+						</div>
+
+						<div id="btnTechnicalLogin" style="display:none">
+							<form action="javascript:loginSendAuthentication()" method="POST">
+								<label class="label label-info" for="loginPassword"></label>
+								<input type="password" name="yearCode" autocomplete="none" id="loginPassword" class="form-control" placeholder="Password" autofocus>
+								<hr>
+								<p id="errorMessage" class="alert alert-danger dict_wrongpassword"  role="alert" style="display:none; color: crimson;">Wrong Password</p>
+								<button type="button" style="background: smokewhite;" onclick="loginSendAuthentication()" class="btn btn-secondary btn-lg btn-block dict_login">Login</button>
+							</form>
+						</div>
+									
+						<!-- Activate licences part -->
+						<div id="openLicences" style="display:block;" onclick="openLicences()">
+							<h2><i class="fas fa-key"></i> <span class="dict_activatelicence">Active licence</span>   </h2>
+							<hr>
+						</div>
+
+						<div id="btnActivateLicence" style="display:none">
+							<form action="/licenceUpload" method="POST">
+								<input type="file" id="myFile" name="filename">
+								<hr>
+								<button type="submit" style="background: smokewhite;" class="btn btn-secondary btn-lg btn-block dict_confirm">Confirm</button>
+							</form>
+						</div>
+
+
+						<!-- About part -->
+						<div id="openAbout" style="display:block;" onclick="openAbout()">
+							<h2><i class="fas fa-info-circle"></i> <span class="dict_about">About</span>   </h2>
+						</div>
+
+						<div id="btnAbout" style="display:none">
+							<h2 class="dict_softwareversion">Software versions:</h2>
+							<label id="kenServer_versionNumber_label" class="label label-info dict_kenServer_softwareversion" for="versionNumber">KENServer Software version</label>
+							<p id="kenServer_versionNumber">X.X.X</p>
+							<label id="al10_versionNumber_label" class="label label-info dict_al10_softwareversion" for="versionNumber">AL10 Software version</label>
+							<p id="al10_versionNumber">X.X.X</p>
+							<div id="robot_versions_div">
+								<label class="label label-info dict_c15_softwareversion" for="versionNumber">C15 Software version</label>
+								<p id="c15_versionNumber">X.X.X</p>
+								<label class="label label-info dict_mir_softwareversion" for="versionNumber">MiR Software version</label>
+								<p id="mir_versionNumber">X.X.X</p>
+								<label class="label label-info dict_kenserver_softwareversion" for="versionNumber">KEN Server Software version</label>
+								<p id="kenserver_versionNumber">X.X.X</p>
+							</div>
+							<hr>							
+							<h2 class="dict_licenceoverview">Licence overview:</h2>
+							<div id = "licence_duration_div">
+								<label class="label label-info dict_bigscreen" for="versionNumber">Big Screen</label>
+								<p id="bigscreen_licence_duration">Not active</p>
+							</div>
+						</div>
+	
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 			END OF Option MODAL  		-->
+
+
+		<!-- 			START OF ROBOT MODAL  		-->
+		<div class="modal loginModal" id="robotModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title"style="text-align: center;font-size: 40px;" id="RobotModalTitle"> 	Robot title</h5>
+					</div>
+					<div class="modal-body" id="LoginmodalBody" >
+
+						<!-- Robot Information part  -->
+						<div id="robotInfo" style="display:block;">
+							<ul style="list-style-type:none;">
+								<!-- <li id="jobPlaceholder"	style="font-size: 30px;"></li> -->
+								<li id="batteryPlaceHolder"	style="font-size: 30px;"></li>
+								<li id="serialNumberPlaceHolder" style="font-size: 30px;"></li>
+								<li id="wiFiNamePlaceHolder" style="font-size: 30px;"></li>
+								<li id="hasRackPlaceHolder" style="font-size: 30px;"></li>
+								<!-- <li id="robotStatusPlaceHolder" style="font-size: 30px;"></li> -->
+							</ul>
+						</div>
+
+						<hr>
+						
+						<div id = "robotMoveAway_div" style="display:block;" class="row">
+							<div class="col-sm-6" align="middle">
+								<button id="moveRobotAway_button" style="float:center;" class="btn btn-info btn-lg">
+									<span class="">Move away</span>
+								</button>
+							</div>
+							<div class="col-sm-6" align="middle">
+								<button id="resumeJobs_button" style="float:center;" class="btn btn-info btn-lg">
+									<span class="">Resume jobs</span>
+								</button>
+							</div>
+							
+							<hr>
+							<br>
+							<hr>
+						</div>
+						
+
+						<div id="robotInfo2" style="display:block;">
+							<ul style="list-style-type:none;">
+								<li id="robotStatusPlaceHolder" style="font-size: 30px;"></li>
+							</ul>
+						</div>
+
+						<table id="robot_error_events_table" class="table table-bordered table-striped table-condensed">
+							<thead>
+								<tbody id="robot_error_events_body">
+									<tr>
+										<th class="dict_errorcode text-center">Error code</th>
+										<th class="dict_errortype text-center">Type</th>
+										<th class="dict_timestamp text-center">Timestamp</th>
+									</tr>
+								</tbody>
+							</thead>
+						</table>
+						<div class="modal-footer">
+							<button onclick="HideRobotModal()" style="float:left;" class="btn btn-warning btn-lg">
+								<span class="fas fa-ban fa-sm"></span>
+							</button>
+							<button id="nextTenRobotErrorEvents_button" style="float:right;" class="btn btn-info btn-lg">
+								<span class="fas fa-angle-right fa-sm"></span>
+							</button>
+							<button id="newestTenRobotErrorEvents_button" style="float:right;" class="btn btn-info btn-lg">
+								<span class="fas fa-angle-double-left fa-sm"></span>
+							</button>
+						</div>
+						<!-- <hr> -->
+
+						<!--  Removed until the functionality is made 
+						<div id="btnMoveBackRobot" style="display:block" onclick="">
+							<h2 id="robotCommandTitle" class="dict_commands">Commands</h2>
+							<span id="commandHolder"></span>
+						</div>
+							-->
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 			END OF ROBOT MODAL  		-->
+		
+		<!--			START OF BIGSCREEN MODAL	-->
+		<div id="bigScreenModal" class="modal fade" role="dialog">
+			<div class="modal-dialog" style="width:80%;">
+				<div class="modal-content">
+					<div class="modal-header">
+						<div>
+							<h1 id="bigScreenModal_title" class="dict_bigscreentitle">Big Screen</h1>
+						</div>
+					</div>
+					<div class="modal-body">
+						<div class="container-fluid">
+							<i id="trial_expired_text" style="display:block;" class="dict_trialexpiredtext">Trail expired. Activate a licence for this option to re-active it.</i>
+							<!-- <form id="licenceForm" action="/licenceUpload" method="POST">
+								<input type="file" id="myFile" name="filename">
+								<input type="submit">
+							</form> -->
+							<button id="activateBigScreenTrial_button" style="float:center; border: 1px black solid; display:none;" class="btn btn-info btn-lg dict_activate30daystrials" onclick="ActivateBigScreenTrial()">Activate 30 day trial period</button>		
+							<div class="row" id="washStatusScreen" style="display:block">
+								<div id="washStatusContainer" class="grid-container"></div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button style="float:left;" class="btn btn-warning btn-lg" data-dismiss="modal">
+							<span class="fas fa-ban fa-sm"></span>
+						</button>
+						<!-- <span class="fas fa-ban fa-lg" 	style="float:left; font-size: 60px;" data-dismiss="modal"></span> -->
+						<!-- <span id="activateBigScreenLicense_button" style="float:right; font-size: 60px; display:none;" class="fas fa-unlock fa-lg" onclick="ActivateBigScreenLicense()"></span>		 -->
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--			END OF BIGSCREEN MODAL		-->
+
+		<!-- TODO: Make the check boxes inline with each other -->
+		<footer class="navbar navbar-default navbar-fixed-bottom"> 									<!-- Fixed Footer -->
+			<div class="container">
+				<div class="row">
+					<div class="col-xs-2">
+						<span class="text-mute navbar-text">
+							<!-- <img src="./KEN-HYGIENE-SYSTEMS-R-logo.png" height=35px alt="KEN Hygiene Systems" align="middle"> -->
+							<div class="row">
+								<div class="col-xs-4">
+									<label class="al10-check">
+										<input id="select_side_unclean_cb" type="checkbox" onclick="SelectSides('unclean')">
+										<span class="checkmark fas fa-allergies"></span> 
+									</label>
+								</div>
+								<div class="col-xs-4">
+									<label class="al10-check">
+										<input id="select_side_clean_cb" type="checkbox" onclick="SelectSides('clean')">
+										<span class="checkmark fas fa-hand-sparkles"></span>
+									</label>
+								</div>
+								<div class="col-xs-4">
+									<label class="al10-check" id = "select_side_sterile_div" style="">
+										<input id="select_side_sterile_cb" type="checkbox" onclick="SelectSides('sterile')">
+										<span class="checkmark fas fa-virus-slash"></span>
+									</label>
+								</div>
+							</div>
+						</span>
+					</div>
+
+					<div class="col-xs-4 text-mute navbar-text navbar-center"  id="lostRacksPresent_div">	
+						<div style="text-align:center;float:center;">
+							<button id="lostRacksPresent_button" style="float:center; border: 1px black solid;" class="btn btn-warning btn-lg" onclick="ShowLostRacksModal()">
+								<i class="fas fa-exclamation-triangle" style="color: black"></i> 
+								<span style="color: black" id="lostRacksPresent_span">Lost Racks</span>
+							</button>				
+						</div>						
+					</div>
+
+					<div class="col-xs-3 text-mute navbar-text navbar-center" id="positionInError_div">	
+						<div style="text-align:center;float:center;">
+							<button id="positionInError_button" style="float:center; border: 1px black solid;" class="btn btn-warning btn-lg" onclick="ShowPositionWithUnknownRackModal()">
+								<i class="fas fa-exclamation-triangle" style="color: black"></i> 
+								<span style="color: black" class="dict_posisinerror" id="positionInError_span">Position in error</span>
+							</button>				
+						</div>						
+					</div>
+
+					<div class="col-xs-2 text-mute navbar-text navbar-right">
+						<div style="text-align:center;float:right">
+							<span id="footer_time"></span>
+							<br>
+							<span id="footer_date"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</footer>
+	
+	</body>
+
+
+	
+	
+	<script type="application/javascript" src="{{url_for('static', filename='js/socket-2-0.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/language.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/access.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/storage.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/common.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/index-2-0.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/queue-2-0.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/deviceAlerts-2-0.js')}}"></script>
+	<script type="application/javascript" src="{{url_for('static', filename='js/al10_localization.js')}}"></script>
+
+</html>
