@@ -17,7 +17,7 @@ def handle_wash(command):
         return "Success"
     return "Failure"
 
-def handle_move(command):
+def handle_relocate(command):
     print("Moving rack ", command['rack_id'], " to location ", command['position_id'])
     
     rack_id = get_rack_id(command['rack_id'])
@@ -49,7 +49,7 @@ def handle_none(command):
 # Dictionary mapping command types to handler functions
 command_handlers = {
     "wash": handle_wash,
-    "move": handle_move,
+    "relocate": handle_relocate,
     "return": handle_return,
     "safe": handle_safe,
     "cancel": handle_cancel,
