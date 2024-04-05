@@ -15,14 +15,14 @@ async function createModel() {
 }
 
 async function init() {
+
+    console.log("listening...")
     try {
         const recognizer = await createModel();
         const classLabels = recognizer.wordLabels();
-        const labelContainer = document.getElementById("label-container");
-
         let isRecording = false;
         let chunks = [];
-
+        recognizer.isRecording
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 recognizer.listen(result => {
@@ -38,12 +38,11 @@ async function init() {
                             }
                         }
 
-                        labelContainer.innerHTML = classLabels[maxIndex] + ": " + maxScore.toFixed(2);
-
                         const recognizedWord = classLabels[maxIndex].toLowerCase();
                         if ((recognizedWord === "okay" || recognizedWord === "hey")) {
+                            console.log("I heard: ", recognizedWord)
                             isRecording = true;
-                            document.body.style.backgroundColor = "#2ecc71";
+                            document.getElementById("top_microphone").style.backgroundColor = "#2ecc71";
                             const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
                             var options = {
                                 audioBitsPerSecond: 128000,
@@ -58,14 +57,9 @@ async function init() {
                             };
 
                             mediaRecorder.onstop = () => {
-                                const audio = document.getElementById("recordedAudio");
-                                audio.controls = true;
                                 const blob = new Blob(chunks, { 'type': 'audio/wav; codecs=0' });
                                 SendAudioToEndpoint(blob);
-                                const audioURL = window.URL.createObjectURL(blob);
-                                audio.src = audioURL;
-                                console.log("URL :\n", audioURL)
-                                
+
                                 // reset sound
                                 chunks = [];
                             };
@@ -73,11 +67,20 @@ async function init() {
                             mediaRecorder.start();
                             document.body.classList.add('recording'); // Add 'recording' class to body
                             setTimeout(() => {
+
+                                // FAKE CODE
+                                document.getElementById("top_microphone").style.backgroundColor = "yellow";
+                                document.getElementById("task-progress").style.display = "block"
+                                setTimeout(()=>{
+                                    document.getElementById("task-progress").style.display = "none"
+                                    document.getElementById("top_microphone").style.backgroundColor = "";
+                                }, 3000)
+
+
                                 mediaRecorder.stop();
                                 isRecording = false;
-                                document.body.style.backgroundColor = "#1a5276";
                                 document.body.classList.remove('recording'); // Remove 'recording' class from body
-                            }, 5000); // Record for 3 seconds
+                            }, 5000); // Record for 5 seconds
                         }
                     }
                 }, {
@@ -116,3 +119,7 @@ function SendAudioToEndpoint(blob) {
             console.error('Error sending audio file:', error);
         });
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    init();
+});
