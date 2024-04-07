@@ -1,106 +1,96 @@
-async function createModel() {
-    const URL = "http://localhost:5000/files/";
-    const checkpointURL = URL + "model.json";
-    const metadataURL = URL + "metadata.json";
+let recognizer;
 
-    const recognizer = speechCommands.create(
+async function startRecognition() {
+    document.getElementById("top_microphone").style.backgroundColor = "";
+    document.getElementById("task-progress").style.display = "none";
+        
+    recognizer = speechCommands.create(
         "BROWSER_FFT",
         undefined,
-        checkpointURL,
-        metadataURL);
+        "http://localhost:5000/files/model.json",
+        "http://localhost:5000/files/metadata.json"
+    );
 
     await recognizer.ensureModelLoaded();
 
-    return recognizer;
+    // Print the possible outcomes (words the model has been trained on)
+    const classLabels = recognizer.wordLabels();
+    console.log("Possible outcomes:", classLabels);
+
+    recognizer.listen(result => {
+        const classLabels = recognizer.wordLabels();
+        const maxIndex = result.scores.indexOf(Math.max(...result.scores));
+        const recognizedWord = classLabels[maxIndex].toLowerCase();
+
+        if (recognizedWord === "okay" || recognizedWord === "hey") {
+            console.log("Recognized:", recognizedWord);
+            stopRecognition()
+            recordAudio();
+        }
+    }, {
+        includeSpectrogram: true,
+        probabilityThreshold: 0.85,
+        invokeCallbackOnNoiseAndUnknown: true,
+        overlapFactor: 0.50
+    });
 }
 
-async function init() {
-
-    console.log("listening...")
-    try {
-        const recognizer = await createModel();
-        const classLabels = recognizer.wordLabels();
-        let isRecording = false;
-        let chunks = [];
-        recognizer.isRecording
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                recognizer.listen(result => {
-                    if (!isRecording) {
-                        const scores = result.scores;
-                        let maxIndex = 0;
-                        let maxScore = scores[0];
-
-                        for (let i = 1; i < scores.length; i++) {
-                            if (scores[i] > maxScore) {
-                                maxScore = scores[i];
-                                maxIndex = i;
-                            }
-                        }
-
-                        const recognizedWord = classLabels[maxIndex].toLowerCase();
-                        if ((recognizedWord === "okay" || recognizedWord === "hey")) {
-                            console.log("I heard: ", recognizedWord)
-                            isRecording = true;
-                            document.getElementById("top_microphone").style.backgroundColor = "#2ecc71";
-                            const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
-                            var options = {
-                                audioBitsPerSecond: 128000,
-                                mimeType: mime
-                            }
-
-                            const mediaRecorder = new MediaRecorder(stream, options);
-
-                            mediaRecorder.ondataavailable = event => {
-                                console.log("Data available:", event.data);
-                                chunks.push(event.data);
-                            };
-
-                            mediaRecorder.onstop = () => {
-                                const blob = new Blob(chunks, { 'type': 'audio/wav; codecs=0' });
-                                SendAudioToEndpoint(blob);
-
-                                // reset sound
-                                chunks = [];
-                            };
-
-                            mediaRecorder.start();
-                            document.body.classList.add('recording'); // Add 'recording' class to body
-                            setTimeout(() => {
-
-                                // FAKE CODE
-                                document.getElementById("top_microphone").style.backgroundColor = "yellow";
-                                document.getElementById("task-progress").style.display = "block"
-                                setTimeout(()=>{
-                                    document.getElementById("task-progress").style.display = "none"
-                                    document.getElementById("top_microphone").style.backgroundColor = "";
-                                }, 3000)
-
-
-                                mediaRecorder.stop();
-                                isRecording = false;
-                                document.body.classList.remove('recording'); // Remove 'recording' class from body
-                            }, 5000); // Record for 5 seconds
-                        }
-                    }
-                }, {
-                    includeSpectrogram: true,
-                    probabilityThreshold: 0.85,
-                    invokeCallbackOnNoiseAndUnknown: true,
-                    overlapFactor: 0.50
-                });
-            })
-            .catch(error => {
-                console.error("Error accessing microphone:", error);
-            });
-    } catch (error) {
-        console.error("Error initializing recognition:", error);
+function stopRecognition() {
+    if (recognizer) {
+        recognizer.stopListening();
     }
 }
 
-function SendAudioToEndpoint(blob) {
+async function recordAudio() {
+    // Get user media stream
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // Define MIME type for recording
+    const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
+    const options = {
+        audioBitsPerSecond: 128000,
+        mimeType: mime
+    };
+
+    // Create MediaRecorder
+    const mediaRecorder = new MediaRecorder(stream, options);
+    const chunks = [];
+
+    // Event handlers for MediaRecorder
+    mediaRecorder.ondataavailable = event => {
+        console.log("Data available:", event.data);
+        chunks.push(event.data);
+    };
+
+    mediaRecorder.onstop = () => {
+        document.getElementById("top_microphone").style.backgroundColor = "";
+        
+        // Convert chunks to Blob
+        const blob = new Blob(chunks, { type: 'audio/wav; codecs=0' });
+
+        // Send audio Blob to endpoint
+        sendAudioToEndpoint(blob);
+
+        // Reset chunks array
+        chunks = [];
+    };
+
+    mediaRecorder.onstart = () => {
+        document.getElementById("top_microphone").style.backgroundColor = "#2ecc71";
+    }
+
+    // Start recording for 5 seconds
+    mediaRecorder.start();
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    mediaRecorder.stop();
+}
+
+function sendAudioToEndpoint(blob) {
     const formData = new FormData();
     formData.append('audio', blob);
+    document.getElementById("top_microphone").style.backgroundColor = "#F7C566";
+    document.getElementById("task-progress").style.display = "block"
+
 
     fetch('http://localhost:5000/process', {
         method: 'POST',
@@ -118,8 +108,14 @@ function SendAudioToEndpoint(blob) {
         .catch(error => {
             console.error('Error sending audio file:', error);
         });
+    
+    // FAKE PROCESSING
+    setTimeout(() => {
+        console.log("Done processing");
+        startRecognition();
+    }, 5000)
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    init();
+document.addEventListener("DOMContentLoaded", function () {
+    startRecognition();
 });
