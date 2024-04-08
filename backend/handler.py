@@ -64,10 +64,14 @@ def handle_command(command_str):
         command = json.loads(command_json)
         use_case = command.get('use_case')
         handler = command_handlers.get(use_case)
+        if use_case == 'none':
+            return 'error'
         if handler:
             handler(command)
+            return 'Success'
         else:
             print("No handler found for command:", use_case)
+            return 'error'
     else:
         print("No valid JSON object found in the input string.")
-
+        return 'error'

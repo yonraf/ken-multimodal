@@ -1,9 +1,10 @@
-let recognizer;
+var recognizer;
 
-async function startRecognition() {
-    document.getElementById("top_microphone").style.backgroundColor = "";
-    document.getElementById("task-progress").style.display = "none";
-        
+var socket = io.connect();
+
+var recording;
+
+async function init(){
     recognizer = speechCommands.create(
         "BROWSER_FFT",
         undefined,
@@ -12,6 +13,14 @@ async function startRecognition() {
     );
 
     await recognizer.ensureModelLoaded();
+}
+
+
+async function startRecognition() {
+    document.getElementById("top_microphone").style.backgroundColor = "";
+    document.getElementById("task-progress").style.display = "none";
+        
+    
 
     // Print the possible outcomes (words the model has been trained on)
     const classLabels = recognizer.wordLabels();
@@ -33,12 +42,14 @@ async function startRecognition() {
         invokeCallbackOnNoiseAndUnknown: true,
         overlapFactor: 0.50
     });
+    recording = true;
 }
 
 function stopRecognition() {
-    if (recognizer) {
+    if (recording) {
         recognizer.stopListening();
     }
+   recording = false;
 }
 
 async function recordAudio() {
@@ -110,12 +121,103 @@ function sendAudioToEndpoint(blob) {
         });
     
     // FAKE PROCESSING
-    setTimeout(() => {
-        console.log("Done processing");
-        startRecognition();
-    }, 5000)
+    //setTimeout(() => {
+    //    console.log("Done processing");
+    //    startRecognition();
+    //}, 5000)
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
+    init();
     startRecognition();
+
 });
+
+
+
+socket.on('client', function (data) {
+   
+    
+    console.log('Socket connected');
+})
+
+
+
+socket.on('state', function (data) {
+    updateProgressBar(data);
+    showProgressBar(data);
+});
+
+
+
+
+// Example: Change progress to 40% (success)
+
+
+function updateProgressBar(state) {
+    var progressBar = document.getElementById("progress-bar");
+    var percent;
+    var colorClass = "progress-bar-success"; // Default color
+
+    switch (state) {
+        case "transcribing":
+            percent = 15;
+            break;
+        case "processing":
+            percent = 40;
+            break;
+        case "recognising":
+            percent = 80;
+            break;
+        case "executing":
+            percent = 90;
+            break;
+        case "completed":
+            percent = 100;
+            // Failure, color to red
+
+            break;
+        case "error":
+            colorClass = "progress-bar-danger";
+            
+        default:
+            // Handle unknown state
+            break;
+    }
+    if (percent != null){
+        progressBar.style.width = percent + "%";
+        progressBar.setAttribute("aria-valuenow", percent);
+        progressBar.textContent = percent + "%";    
+    }
+    progressBar.classList.remove("progress-bar-success", "progress-bar-warning", "progress-bar-danger");
+    progressBar.classList.add(colorClass);
+   
+    //progressBar.querySelector(".sr-only").textContent = percent + "% Complete";
+}
+
+
+function showProgressBar(status){
+    var progressBar = document.getElementById("progress-bar");
+    
+
+    if (status == "completed" || status == "error"){
+        setTimeout(()=>{
+
+            document.getElementById("task-progress").style.display = "none"
+            document.getElementById("top_microphone").style.backgroundColor = "";
+            
+            var percent = 0;
+            progressBar.style.width = percent + "%";
+            progressBar.setAttribute("aria-valuenow", percent);
+            progressBar.textContent = percent + "%";
+            progressBar.classList.remove("progress-bar-success", "progress-bar-warning", "progress-bar-danger");
+            progressBar.classList.add("progress-bar-success");
+            progressBar.style.width = percent + "%";
+
+            if(!recording){
+                startRecognition();
+            }
+        }, 3000)
+        
+    }
+}
