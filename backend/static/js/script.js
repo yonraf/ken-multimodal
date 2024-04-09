@@ -1,15 +1,17 @@
 var recognizer;
 
-var socket = io.connect();
+var socket = io.connect("172.20.10.6:5000");
 
 var recording;
+
+var chunks = []
 
 async function init(){
     recognizer = speechCommands.create(
         "BROWSER_FFT",
         undefined,
-        "http://localhost:5000/files/model.json",
-        "http://localhost:5000/files/metadata.json"
+        "http://172.20.10.6:5000/files/model.json",
+        "http://172.20.10.6:5000/files/metadata.json"
     );
 
     await recognizer.ensureModelLoaded();
@@ -60,12 +62,13 @@ async function recordAudio() {
     const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
     const options = {
         audioBitsPerSecond: 128000,
+        
         mimeType: mime
     };
 
     // Create MediaRecorder
     const mediaRecorder = new MediaRecorder(stream, options);
-    const chunks = [];
+    //const chunks = [];
 
     // Event handlers for MediaRecorder
     mediaRecorder.ondataavailable = event => {
@@ -103,7 +106,7 @@ function sendAudioToEndpoint(blob) {
     document.getElementById("task-progress").style.display = "block"
 
 
-    fetch('http://localhost:5000/process', {
+    fetch('http://172.20.10.6:5000/process', {
         method: 'POST',
         body: formData
     })

@@ -1,11 +1,12 @@
 from flask import Flask, request, render_template, send_from_directory
 import requests
 import json
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from faster_whisper import WhisperModel
 from handler import handle_command
 from flask_socketio import SocketIO 
 import time
+
 
 app = Flask(__name__)
 CORS(app)
@@ -92,4 +93,5 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000)
+    #app.run(host='0.0.0.0', port=5000)
+    socketio.run(app,host='0.0.0.0', port=5000)
