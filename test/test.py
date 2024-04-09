@@ -15,7 +15,7 @@ model = WhisperModel('small', compute_type="int8")
 def transcribe(filename):
     # Get the audio file from the request
     print('Transcribing...\n')
-    segments, info = model.transcribe("C:/Users/Yonus/Documents/Dev Projects/ken-multimodal/test/audio files/"+filename, beam_size=5)
+    segments, info = model.transcribe("C:/Users/Yonus/Documents/Dev Projects/ken-multimodal/test/audio files/"+filename, beam_size=5, language="en")
     seg = list(segments)
     transcription = seg[0].text
     print('Trans:\n', transcription)
