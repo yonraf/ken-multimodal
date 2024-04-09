@@ -1,6 +1,8 @@
+const IP = "172.20.10.6:5000"
 var recognizer;
 
-var socket = io.connect("172.20.10.6:5000");
+
+var socket = io.connect(IP);
 
 var recording;
 
@@ -10,8 +12,8 @@ async function init(){
     recognizer = speechCommands.create(
         "BROWSER_FFT",
         undefined,
-        "http://172.20.10.6:5000/files/model.json",
-        "http://172.20.10.6:5000/files/metadata.json"
+        "http://" + IP + "/files/model.json",
+        "http://" + IP + "/files/metadata.json"
     );
 
     await recognizer.ensureModelLoaded();
@@ -106,7 +108,7 @@ function sendAudioToEndpoint(blob) {
     document.getElementById("task-progress").style.display = "block"
 
 
-    fetch('http://172.20.10.6:5000/process', {
+    fetch('http://' + IP + '/process', {
         method: 'POST',
         body: formData
     })
