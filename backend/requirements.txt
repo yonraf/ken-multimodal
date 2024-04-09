@@ -2,3 +2,4 @@ Flask
 requests
 faster-whisper
 flask-cors
+flask-socketio

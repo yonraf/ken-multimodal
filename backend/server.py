@@ -1,17 +1,18 @@
 from flask import Flask, request, render_template, send_from_directory
 import requests
 import json
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from faster_whisper import WhisperModel
 from handler import handle_command
 from flask_socketio import SocketIO 
 import time
 
+
 app = Flask(__name__)
 CORS(app)
 
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 model = WhisperModel('small', compute_type="int8")
 
@@ -31,24 +32,29 @@ def serve_file(filename):
 
 @app.route('/process', methods=['POST'])
 def handle_request():
-    audio_file = request.files['audio']
-    audio_file.save('audio_received.wav')
-    socketio.emit('message_from_server', "1")
+    try:
+        audio_file = request.files['audio']
+        audio_file.save('audio_received.wav')
+        socketio.emit('state', "transcribing")
+        transcription = transcribe()
 
-    transcription = transcribe()
-    socketio.emit('message_from_server', "2")
+        socketio.emit('state', "processing")
+        response = message(transcription)
+        
+        socketio.emit('state', "recognising")
+        command = handle_command(response)
 
+        if command == 'error':
+            socketio.emit('state','error')
+            return "Internal Server Error", 500, {"Access-Control-Allow-Origin": "*"}
+        
+        socketio.emit('state', "completed")
+        return "Success", 200, {"Access-Control-Allow-Origin": "*"}
+    
+    except:
+        socketio.emit('state', "error")
+        return "Internal Server Error", 500, {"Access-Control-Allow-Origin": "*"}
 
-    response = message(transcription)
-
-    socketio.emit('message_from_server', "3")
-
-    handle_command(response)
-
-    time.sleep(2)
-    socketio.emit('message_from_server', "4")
-
-    return "Success", 200, {"Access-Control-Allow-Origin": "*"}
 
 
 def transcribe():
@@ -65,7 +71,7 @@ def message(text):
     url = "http://localhost:11434/api/generate"
     headers = {"Content-Type": "application/json"}
     data = {
-        "model": "ken_llama",
+        "model": "ken_openchat",
         "prompt": text,
         "stream": False
     }
@@ -78,6 +84,7 @@ def message(text):
 
 @socketio.on('connect')
 def handle_connect():
+    #socketio.emit('client', 'connected')
     print('Client connected')
 
 @socketio.on('disconnect')
@@ -86,4 +93,5 @@ def handle_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000)
+    #app.run(host='0.0.0.0', port=5000)
+    socketio.run(app,host='0.0.0.0', port=5000)

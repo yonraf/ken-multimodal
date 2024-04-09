@@ -1,17 +1,28 @@
-let recognizer;
+var recognizer;
+
+var socket = io.connect("172.20.10.6:5000");
+
+var recording;
+
+var chunks = []
+
+async function init(){
+    recognizer = speechCommands.create(
+        "BROWSER_FFT",
+        undefined,
+        "http://172.20.10.6:5000/files/model.json",
+        "http://172.20.10.6:5000/files/metadata.json"
+    );
+
+    await recognizer.ensureModelLoaded();
+}
+
 
 async function startRecognition() {
     document.getElementById("top_microphone").style.backgroundColor = "";
     document.getElementById("task-progress").style.display = "none";
         
-    recognizer = speechCommands.create(
-        "BROWSER_FFT",
-        undefined,
-        "http://localhost:5000/files/model.json",
-        "http://localhost:5000/files/metadata.json"
-    );
-
-    await recognizer.ensureModelLoaded();
+    
 
     // Print the possible outcomes (words the model has been trained on)
     const classLabels = recognizer.wordLabels();
@@ -33,12 +44,14 @@ async function startRecognition() {
         invokeCallbackOnNoiseAndUnknown: true,
         overlapFactor: 0.50
     });
+    recording = true;
 }
 
 function stopRecognition() {
-    if (recognizer) {
+    if (recording) {
         recognizer.stopListening();
     }
+   recording = false;
 }
 
 async function recordAudio() {
@@ -49,12 +62,13 @@ async function recordAudio() {
     const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
     const options = {
         audioBitsPerSecond: 128000,
+        
         mimeType: mime
     };
 
     // Create MediaRecorder
     const mediaRecorder = new MediaRecorder(stream, options);
-    const chunks = [];
+    //const chunks = [];
 
     // Event handlers for MediaRecorder
     mediaRecorder.ondataavailable = event => {
@@ -92,7 +106,7 @@ function sendAudioToEndpoint(blob) {
     document.getElementById("task-progress").style.display = "block"
 
 
-    fetch('http://localhost:5000/process', {
+    fetch('http://172.20.10.6:5000/process', {
         method: 'POST',
         body: formData
     })
@@ -110,12 +124,103 @@ function sendAudioToEndpoint(blob) {
         });
     
     // FAKE PROCESSING
-    setTimeout(() => {
-        console.log("Done processing");
-        startRecognition();
-    }, 5000)
+    //setTimeout(() => {
+    //    console.log("Done processing");
+    //    startRecognition();
+    //}, 5000)
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
+    init();
     startRecognition();
+
 });
+
+
+
+socket.on('client', function (data) {
+   
+    
+    console.log('Socket connected');
+})
+
+
+
+socket.on('state', function (data) {
+    updateProgressBar(data);
+    showProgressBar(data);
+});
+
+
+
+
+// Example: Change progress to 40% (success)
+
+
+function updateProgressBar(state) {
+    var progressBar = document.getElementById("progress-bar");
+    var percent;
+    var colorClass = "progress-bar-success"; // Default color
+
+    switch (state) {
+        case "transcribing":
+            percent = 15;
+            break;
+        case "processing":
+            percent = 40;
+            break;
+        case "recognising":
+            percent = 80;
+            break;
+        case "executing":
+            percent = 90;
+            break;
+        case "completed":
+            percent = 100;
+            // Failure, color to red
+
+            break;
+        case "error":
+            colorClass = "progress-bar-danger";
+            
+        default:
+            // Handle unknown state
+            break;
+    }
+    if (percent != null){
+        progressBar.style.width = percent + "%";
+        progressBar.setAttribute("aria-valuenow", percent);
+        progressBar.textContent = percent + "%";    
+    }
+    progressBar.classList.remove("progress-bar-success", "progress-bar-warning", "progress-bar-danger");
+    progressBar.classList.add(colorClass);
+   
+    //progressBar.querySelector(".sr-only").textContent = percent + "% Complete";
+}
+
+
+function showProgressBar(status){
+    var progressBar = document.getElementById("progress-bar");
+    
+
+    if (status == "completed" || status == "error"){
+        setTimeout(()=>{
+
+            document.getElementById("task-progress").style.display = "none"
+            document.getElementById("top_microphone").style.backgroundColor = "";
+            
+            var percent = 0;
+            progressBar.style.width = percent + "%";
+            progressBar.setAttribute("aria-valuenow", percent);
+            progressBar.textContent = percent + "%";
+            progressBar.classList.remove("progress-bar-success", "progress-bar-warning", "progress-bar-danger");
+            progressBar.classList.add("progress-bar-success");
+            progressBar.style.width = percent + "%";
+
+            if(!recording){
+                startRecognition();
+            }
+        }, 3000)
+        
+    }
+}
