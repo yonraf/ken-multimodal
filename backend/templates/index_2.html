@@ -83,8 +83,8 @@ enclosed in the following format:
 					<ul style="list-style: none; text-align: center; padding: 0px; top: 30px; width: 400px;">
 
 						<!-- Mikrofon -->
-						<div id="top_microphone" style="border-radius: 10px; padding: 7px; margin: 0 100px; ">
-							<img src="{{url_for('static', filename='img/microphone-solid.svg')}}" height="35px">
+						<div id="top_microphone" style="border-radius: 10px; padding: 7px; margin: 0 100px;">
+							<img src="{{url_for('static', filename='img/microphone-solid.svg')}}" height="35px" onclick="recordAudio()">
 						</div>
 
 						<!-- Progress -->
