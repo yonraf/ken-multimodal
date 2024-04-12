@@ -37,7 +37,6 @@ async function startRecognition() {
 
         if (recognizedWord === "okay" || recognizedWord === "hey") {
             console.log("Recognized:", recognizedWord);
-            stopRecognition()
             recordAudio();
         }
     }, {
@@ -57,6 +56,8 @@ function stopRecognition() {
 }
 
 async function recordAudio() {
+    stopRecognition();
+    
     // Get user media stream
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
