@@ -1,4 +1,4 @@
-const IP = "172.20.10.6:5000"
+const IP = "localhost:5000"
 var recognizer;
 
 
@@ -7,6 +7,8 @@ var socket = io.connect(IP);
 var recording;
 
 var chunks = []
+
+var inProgress = false
 
 async function init(){
     recognizer = speechCommands.create(
@@ -56,50 +58,54 @@ function stopRecognition() {
 }
 
 async function recordAudio() {
-    stopRecognition();
-    
-    // Get user media stream
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    // Define MIME type for recording
-    const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
-    const options = {
-        audioBitsPerSecond: 128000,
+    if (!inProgress) {    
+        inProgress = true;
+        stopRecognition();
         
-        mimeType: mime
-    };
+        // Get user media stream
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    // Create MediaRecorder
-    const mediaRecorder = new MediaRecorder(stream, options);
-    //const chunks = [];
+        // Define MIME type for recording
+        const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0];
+        const options = {
+            audioBitsPerSecond: 128000,
+            
+            mimeType: mime
+        };
 
-    // Event handlers for MediaRecorder
-    mediaRecorder.ondataavailable = event => {
-        console.log("Data available:", event.data);
-        chunks.push(event.data);
-    };
+        // Create MediaRecorder
+        const mediaRecorder = new MediaRecorder(stream, options);
+        //const chunks = [];
 
-    mediaRecorder.onstop = () => {
-        document.getElementById("top_microphone").style.backgroundColor = "";
+        // Event handlers for MediaRecorder
+        mediaRecorder.ondataavailable = event => {
+            console.log("Data available:", event.data);
+            chunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+            document.getElementById("top_microphone").style.backgroundColor = "";
+            
+            // Convert chunks to Blob
+            const blob = new Blob(chunks, { type: 'audio/wav; codecs=0' });
+
+            // Send audio Blob to endpoint
+            sendAudioToEndpoint(blob);
+
+            // Reset chunks array
+            chunks = [];
+        }
         
-        // Convert chunks to Blob
-        const blob = new Blob(chunks, { type: 'audio/wav; codecs=0' });
 
-        // Send audio Blob to endpoint
-        sendAudioToEndpoint(blob);
+        mediaRecorder.onstart = () => {
+            document.getElementById("top_microphone").style.backgroundColor = "#2ecc71";
+        }
 
-        // Reset chunks array
-        chunks = [];
+        // Start recording for 5 seconds
+        mediaRecorder.start();
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        mediaRecorder.stop();
     };
-
-    mediaRecorder.onstart = () => {
-        document.getElementById("top_microphone").style.backgroundColor = "#2ecc71";
-    }
-
-    // Start recording for 5 seconds
-    mediaRecorder.start();
-    await new Promise(resolve => setTimeout(resolve, 5000));
-    mediaRecorder.stop();
 }
 
 function sendAudioToEndpoint(blob) {
@@ -222,6 +228,7 @@ function showProgressBar(status){
 
             if(!recording){
                 startRecognition();
+                inProgress = false;
             }
         }, 3000)
         
