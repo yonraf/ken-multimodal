@@ -65,13 +65,13 @@ def handle_command(command_str):
         use_case = command.get('use_case')
         handler = command_handlers.get(use_case)
         if use_case == 'none':
-            return 'error'
+            return 'error', command_json
         if handler:
             handler(command)
-            return 'Success'
+            return 'Success', command_json
         else:
             print("No handler found for command:", use_case)
-            return 'error'
+            return 'error', 'none'
     else:
         print("No valid JSON object found in the input string.")
-        return 'error'
+        return 'error', 'none'
