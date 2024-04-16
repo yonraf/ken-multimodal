@@ -1,79 +1,96 @@
-import re
+from flask import Flask, request, render_template, send_from_directory
 import requests
 import json
-from util import get_rack_id, get_position_id
+from flask_cors import CORS, cross_origin
+from faster_whisper import WhisperModel
+from handler import handle_command
+from flask_socketio import SocketIO
 
-# Regular expression pattern to match JSON objects
-json_pattern = r"\{.*?\}"
+app = Flask(__name__)
+CORS(app)
 
-def handle_wash(command):
-    print("Sending Rack", command['rack_id'], " to wash")
+app.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-    rack_id = get_rack_id(command['rack_id'])
-    
-    print("rack_id: ",rack_id)
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"
-    response = requests.post(url)
-    print(response)
-    return "Success"
-    
+model = WhisperModel('small', compute_type="int8")
 
-def handle_relocate(command):
-    print("Moving rack ", command['rack_id'], " to location ", command['position_id'])
-    
-    rack_id = get_rack_id(command['rack_id'])
-    position_id = get_position_id(command['position_id'])
+@app.route('/')
+def index():
+    return render_template("index.html")
+
+@app.route('/index2')
+def index2():
+    return render_template("index_2.html")
+
+@app.route('/files/<path:filename>')
+def serve_file(filename):
+    directory = 'static/tm-my-audio-model/'
+
+    return send_from_directory(directory, filename)
+
+@app.route('/process', methods=['POST'])
+def handle_request():
+    try:
+        audio_file = request.files['audio']
+        audio_file.save('audio_received.wav')
+        socketio.emit('state', "transcribing")
+        transcription = transcribe()
+
+        socketio.emit('state', "processing")
+        response = message(transcription)
         
-    print("rack_id: ",rack_id)
-    print("pos_id ", position_id)
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
-    response = requests.post(url)
-    print(response)
-    return "Success"
+        socketio.emit('state', "recognising")
+        command = handle_command(response)
 
-def handle_return(command):
-    print("Returning rack ", command['rack_id'])
-    rack_id = get_rack_id(command['rack_id'])
-    url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"
-    response = requests.post(url)
-    print(response)
-    return "Success"
+        if command == 'error':
+            socketio.emit('state','error')
+            return "Internal Server Error", 500, {"Access-Control-Allow-Origin": "*"}
+        
+        socketio.emit('state', "completed")
+        return "Success", 200, {"Access-Control-Allow-Origin": "*"}
+    
+    except:
+        socketio.emit('state', "error")
+        return "Internal Server Error", 500, {"Access-Control-Allow-Origin": "*"}
 
-def handle_safe(command):
-    print("Moving Robot ", command['robot_id'], " to safe position")
 
-def handle_cancel(command):
-    print("Aborting job with rack ", command['rack_id'])
 
-def handle_none(command):
-    print("It does not seem like you intend to perform a task")
+def transcribe():
+    # Get the audio file from the request
+    print('Transcribing...\n')
+    segments, info = model.transcribe('audio_received.wav', beam_size=5, language='en')
+    seg = list(segments)
+    transcription = seg[0].text
+    print('Trans:\n', transcription)
+    return transcription
 
-# Dictionary mapping command types to handler functions
-command_handlers = {
-    "wash": handle_wash,
-    "relocate": handle_relocate,
-    "return": handle_return,
-    "safe": handle_safe,
-    "cancel": handle_cancel,
-    "none": handle_none
-}
+def message(text):
+    # ollama llm
+    url = "http://localhost:11434/api/generate"
+    headers = {"Content-Type": "application/json"}
+    data = {
+        "model": "ken_openchat",
+        "prompt": text,
+        "stream": False,
+        "keep_alive": -1
+    }
+    print('Sent to Ollama...\n')
+    response = requests.post(url, headers=headers, json=data)
+    result = json.loads(response.text)["response"]
+    print('Response from Ollama:\n',result)
+    return result
 
-def handle_command(command_str):
-    # Find JSON object in the input string
-    match = re.search(json_pattern, command_str)
-    if match:
-        command_json = match.group(0)
-        command = json.loads(command_json.lower())
-        use_case = command.get('use_case')
-        handler = command_handlers.get(use_case)
-        if use_case == 'none':
-            return 'error'
-        if handler:
-            handler(command)
-            return 'Success'
-        else:
-            print("No handler found for command:", use_case)
-            return 'error'
-    else:
-        print("No valid JSON object found in the input string.")
-        return 'error'
+
+@socketio.on('connect')
+def handle_connect():
+    #socketio.emit('client', 'connected')
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+
+if __name__ == '__main__':
+    #app.run(host='0.0.0.0', port=5000)
+    socketio.run(app,host='0.0.0.0', port=5000)
