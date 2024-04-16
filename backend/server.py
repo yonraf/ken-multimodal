@@ -64,7 +64,7 @@ def handle_request():
 def transcribe():
     # Get the audio file from the request
     print('Transcribing...\n')
-    segments, info = model.transcribe('audio_received.wav', beam_size=5)
+    segments, info = model.transcribe('audio_received.wav', beam_size=5, language='en')
     seg = list(segments)
     transcription = seg[0].text
     print('Trans:\n', transcription)
