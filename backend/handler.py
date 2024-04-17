@@ -10,32 +10,32 @@ def handle_wash(command):
     print("Sending Rack", command['rack_id'], " to wash")
 
     rack_id = get_rack_id(command['rack_id'])
-    if rack_id is not None:
+    if rack_id  != 'rack error':
         url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=1"
         response = requests.post(url)
         print(response)
-        return "Success"
-    return "Failure"
+        return 'Success'
+    return 'Failure'
 
 def handle_relocate(command):
     print("Moving rack ", command['rack_id'], " to location ", command['position_id'])
-    
     rack_id = get_rack_id(command['rack_id'])
     position_id = get_position_id(command['position_id'])
-    if rack_id is not None and position_id is not None:
+    if rack_id != 'rack error' and position_id != 'position error':
         url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=100&dropoffPositionId={position_id}"
         response = requests.post(url)
-        print(response)
-        return "Success"
+        return 'Success'
+
+    return 'Failure'
 
 def handle_return(command):
     print("Returning rack ", command['rack_id'])
     rack_id = get_rack_id(command['rack_id'])
-    if rack_id is not None:
+    if rack_id != 'rack error':
         url = f"http://172.22.120.50:3000/createJob?rackId={rack_id}&jobType=7"
         response = requests.post(url)
-        print(response)
         return "Success"
+    return 'Failure' 
 
 def handle_safe(command):
     print("Moving Robot ", command['robot_id'], " to safe position")
@@ -57,7 +57,6 @@ command_handlers = {
 }
 
 def handle_command(command_str):
-    # Find JSON object in the input string
     match = re.search(json_pattern, command_str)
     if match:
         command_json = match.group(0)
@@ -67,7 +66,9 @@ def handle_command(command_str):
         if use_case == 'none':
             return 'error', command_json
         if handler:
-            handler(command)
+            action = handler(command)
+            if action == 'Failure':
+                return 'error', command_json
             return 'Success', command_json
         else:
             print("No handler found for command:", use_case)
