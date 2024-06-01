@@ -14,8 +14,8 @@ def record_audio(duration=5, samplerate=44100):
     filename = "./audio files/" + base_filename + ".wav"
 
     # Create directory if it doesn't exist
-    if not os.path.exists("./audio files/"):
-        os.makedirs("./audio files/")
+    if not os.path.exists("./audio_files/"):
+        os.makedirs("./audio_files/")
     
     # Check if the filename already exists
     counter = 1

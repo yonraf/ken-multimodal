@@ -1,8 +1,7 @@
-const IP = "localhost:5000"
+const IP = "10.68.48.113:5000"
 var recognizer;
 
-
-var socket = io.connect(IP);
+var socket = io.connect("10.68.48.113:5000");
 
 var recording;
 
@@ -26,19 +25,15 @@ async function startRecognition() {
     document.getElementById("top_microphone").style.backgroundColor = "";
     document.getElementById("task-progress").style.display = "none";
         
-    
-
-    // Print the possible outcomes (words the model has been trained on)
     const classLabels = recognizer.wordLabels();
-    console.log("Possible outcomes:", classLabels);
+    
 
     recognizer.listen(result => {
         const classLabels = recognizer.wordLabels();
         const maxIndex = result.scores.indexOf(Math.max(...result.scores));
         const recognizedWord = classLabels[maxIndex].toLowerCase();
 
-        if (recognizedWord === "okay" || recognizedWord === "hey") {
-            console.log("Recognized:", recognizedWord);
+        if (recognizedWord === "okay") {
             recordAudio();
         }
     }, {
@@ -75,7 +70,6 @@ async function recordAudio() {
 
         // Create MediaRecorder
         const mediaRecorder = new MediaRecorder(stream, options);
-        //const chunks = [];
 
         // Event handlers for MediaRecorder
         mediaRecorder.ondataavailable = event => {
@@ -131,45 +125,29 @@ function sendAudioToEndpoint(blob) {
         .catch(error => {
             console.error('Error sending audio file:', error);
         });
-    
-    // FAKE PROCESSING
-    //setTimeout(() => {
-    //    console.log("Done processing");
-    //    startRecognition();
-    //}, 5000)
 }
 
 document.addEventListener("DOMContentLoaded", function() {
     init();
     startRecognition();
-
 });
 
 
 
 socket.on('client', function (data) {
-   
-    
     console.log('Socket connected');
 })
 
-
-
 socket.on('state', function (data) {
+    console.log("DATA:",data)
     updateProgressBar(data);
     showProgressBar(data);
 });
 
-
-
-
-// Example: Change progress to 40% (success)
-
-
 function updateProgressBar(state) {
     var progressBar = document.getElementById("progress-bar");
     var percent;
-    var colorClass = "progress-bar-success"; // Default color
+    var colorClass = "progress-bar-success"; // Green
 
     switch (state) {
         case "transcribing":
@@ -186,12 +164,9 @@ function updateProgressBar(state) {
             break;
         case "completed":
             percent = 100;
-            // Failure, color to red
-
             break;
         case "error":
-            colorClass = "progress-bar-danger";
-            
+            colorClass = "progress-bar-danger"; // RED
         default:
             // Handle unknown state
             break;
@@ -203,8 +178,6 @@ function updateProgressBar(state) {
     }
     progressBar.classList.remove("progress-bar-success", "progress-bar-warning", "progress-bar-danger");
     progressBar.classList.add(colorClass);
-   
-    //progressBar.querySelector(".sr-only").textContent = percent + "% Complete";
 }
 
 

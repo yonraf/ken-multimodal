@@ -10,12 +10,12 @@ from faster_whisper import WhisperModel
 app = Flask(__name__)
 CORS(app)
 
-model = WhisperModel('small', compute_type="int8")
+model = WhisperModel('large-v3', compute_type="float32")
 
 def transcribe(filename):
     # Get the audio file from the request
     print('Transcribing...\n')
-    segments, info = model.transcribe("C:/Users/Yonus/Documents/Dev Projects/ken-multimodal/test/audio files/"+filename, beam_size=5, language="en")
+    segments, info = model.transcribe("/home/ken/ken-multimodal/test/new_files/"+filename, beam_size=5, language="en")
     seg = list(segments)
     transcription = seg[0].text
     print('Trans:\n', transcription)
@@ -40,6 +40,7 @@ def process_audio_files(folder_path, output_file):
     with open(output_file, 'w') as f_out:
         for filename in os.listdir(folder_path):
             if filename.endswith('.wav'):
+                print(filename)
                 audio_name = os.path.splitext(filename)[0]
                 print(f"Test - {audio_name}:\n", file=f_out)
                 
@@ -56,6 +57,6 @@ def process_audio_files(folder_path, output_file):
     print("Test results written to", output_file)
 
 if __name__ == '__main__':
-    folder_path = "./audio files"
+    folder_path = "./audio_files"
     output_file = "test_results.txt"
     process_audio_files(folder_path, output_file)
